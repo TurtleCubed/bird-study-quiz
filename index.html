@@ -149,14 +149,15 @@
       sessionStorage.setItem("quizData", JSON.stringify(quizData));
       
       // generate dict with length number of questions containing name, code, link,
+      // const corsAnywhereURL = "https://cors-anywhere.herokuapp.com/"
       const url = "https://media.ebird.org/api/v2/search?taxonCode=" + quizData[0] + "&sort=rating_rank_desc&mediaType=photo&birdOnly=true&beginMonth=1";
       cookies={'ml-search-session': 'eyJ1c2VyIjp7ImFub255bW91cyI6dHJ1ZX19', 'ml-search-session.sig': 'XZPO3pJ50PRL94J3OagC3Bg1IVk'}  
       fetch(url, {
         method: "GET",
-        // headers: {
-        //   'ml-search-session': 'eyJ1c2VyIjp7ImFub255bW91cyI6dHJ1ZX19',
-        //   'ml-search-session.sig': 'XZPO3pJ50PRL94J3OagC3Bg1IVk'
-        // }
+        headers: {
+          'ml-search-session': 'eyJ1c2VyIjp7ImFub255bW91cyI6dHJ1ZX19',
+          'ml-search-session.sig': 'XZPO3pJ50PRL94J3OagC3Bg1IVk'
+        }
       })
           .then((response) => response.json())
           .then((json) => console.log(json))
