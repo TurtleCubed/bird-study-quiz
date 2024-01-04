@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<head>
+  <title>Quiz</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+  <div>
+    <button id="home" onclick="home()">Home</button>
+    <h1 id="title">Question </h1>
+    <div id="imageDiv">
+      <img id="image">
+      <a id="mlLink" href="">Macaulay Library Link</a>
+    </div>
+    <br>
+    <div id="speciesList"></div>
+    <br>
+    <button id="next" onclick="next()">Next Question</button>
+    <div id="listContainer"></div>
+  </div>
+  <script>
+    var questionNumber = null;
+    var selected = "";
+
+    function home() {
+      window.location.href = "/";
+    }
+
+    function next() {
+      const quizData = JSON.parse(sessionStorage.getItem("quizData"));
+      console.log(quizData.length);
+      console.log(questionNumber);
+      if (questionNumber >= quizData.length) {
+        window.location.href = "/result";
+      }
+      else {
+        window.location.href = "/quiz?question=" + String(parseInt(questionNumber) + 1);
+      }
+    }
+
+    function reveal() {
+      var optionList = document.getElementById("speciesList").children;
+      const correctSpecies = JSON.parse(sessionStorage.getItem("quizData"))[parseInt(questionNumber) - 1].species;
+      const mlTag = JSON.parse(sessionStorage.getItem("quizData"))[parseInt(questionNumber) - 1].mlTag;
+      var mlLink = document.getElementById("mlLink");
+      mlLink.target = "_blank";
+      mlLink.href = "https://macaulaylibrary.org/asset/" + mlTag + "/";
+      mlLink.style.display = "block";
+      var nextButton = document.getElementById("next")
+      nextButton.style.display = "block";
+      for (var i = 0; i < optionList.length; i++) {
+        if (optionList[i].innerHTML == correctSpecies) {
+          optionList[i].className = "correct listElement";
+        }
+        if (optionList[i].innerHTML == selected && optionList[i].innerHTML != correctSpecies) {
+          optionList[i].className = "incorrect listElement";
+        }
+        // optionList[i].removeEventListener("click", reveal);
+        var old_element = document.getElementById(optionList[i].id);
+        var new_element = old_element.cloneNode(true);
+        old_element.parentNode.replaceChild(new_element, old_element);
+      }
+      var answerRecord = sessionStorage.getItem("answerRecord");
+      if (answerRecord == null) {
+        sessionStorage.setItem("answerRecord", JSON.stringify([selected]));
+      }
+      else {
+        sessionStorage.setItem("answerRecord", JSON.stringify(JSON.parse(answerRecord).concat([selected])))
+      }
+
+    }
+
+    function onLoad() {
+      var speciesList = JSON.parse(sessionStorage.getItem("speciesList"));
+      var speciesListContainer = document.getElementById("speciesList");
+      for (var i = 0; i < speciesList.length; i++) {
+        option = document.createElement("div");
+        option.className = "unselected listElement";
+        const s = speciesList[i].species;
+        option.id = "option" + i;
+        option.innerHTML = s;
+        option.addEventListener("click", function (f) {
+          selected = s;
+        });
+        option.addEventListener("click", reveal);
+        speciesListContainer.appendChild(option);
+      }
+
+      const queryString = window.location.search;
+      const urlParams = new URLSearchParams(queryString);
+      questionNumber = urlParams.get('question');
+      var t = document.getElementById("title");
+      t.innerHTML = "Quiz Question " + questionNumber;
+
+      var mlLink = document.getElementById("mlLink");
+      mlLink.style.display = "none";
+      var nextButton = document.getElementById("next");
+      nextButton.style.display = "none";
+
+      var img = document.getElementById("image");
+      const mlTag = JSON.parse(sessionStorage.getItem("quizData"))[parseInt(questionNumber) - 1].mlTag;
+      img.src = "https://cdn.download.ams.birds.cornell.edu/api/v1/asset/" + mlTag + "/";
+    }
+    window.onload = onLoad;
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<head>
+  <title>Quiz Configuration</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+</head>
+
+<body>
+  <div>
+    <h1>Quiz Configuration</h1>
+    <label for="questionCount">Question Count:</label>
+    <input id="questionCount" size="1" maxlength="2" value="20"></input>
+    <label for="monthSelector">Month:</label>
+    <select id="monthSelector"></select>
+    <br>
+    <label for="textInput">Search:</label>
+    <input type="text" id="textInput" placeholder="Search..." oninput="showResults()" disabled>
+    <br>
+    <div id="results"></div>
+    <br>
+    <div id="selectionList"></div>
+    <br>
+    <button id="start" onclick="startQuiz()" disabled>Start Quiz!</button>
+    <div id="listContainer"></div>
+  </div>
+  <script>
+    var data = null;
+
+    function isMatch(speciesName, searchString) {
+      var s = speciesName.split(/[- ]/);
+      if (searchString.length == 4) {
+        switch (s.length) {
+          case 1:
+            if (searchString.slice(0, 4) == s[0].slice(0, 4)) {
+              return true;
+            }
+            break;
+          case 2:
+            if (searchString.slice(0, 2) == s[0].slice(0, 2) && searchString.slice(2, 4) == s[1].slice(0, 2)) {
+              return true;
+            };
+            break;
+          case 3:
+            if (searchString.slice(0, 2) == s[0].slice(0, 2) && searchString.slice(2, 3) == s[1].slice(0, 1) && searchString.slice(3, 4) == s[2].slice(0, 1) ||
+              searchString.slice(0, 1) == s[0].slice(0, 1) && searchString.slice(1, 2) == s[1].slice(0, 1) && searchString.slice(2, 4) == s[2].slice(0, 2))
+              return true;
+            break;
+          case 4:
+            if (searchString.slice(0, 1) == s[0].slice(0, 1) && searchString.slice(1, 2) == s[1].slice(0, 1) &&
+              searchString.slice(2, 3) == s[2].slice(0, 1) && searchString.slice(3, 4) == s[3].slice(0, 1))
+              return true;
+            break;
+        }
+      }
+      for (var i = 0; i < s.length; i++) {
+        if (s[i].indexOf(searchString) == 0) {
+          return true;
+        }
+      }
+      if (speciesName.indexOf(searchString) == 0) {
+        return true;
+      }
+      return false;
+    }
+
+    function searchResults(searchInput) {
+      var r = [];
+      for (var i = 0; i < data.length; i++) {
+        if (!data[i].PRIMARY_COM_NAME) {
+          continue;
+        }
+        if (isMatch(data[i].PRIMARY_COM_NAME.toLowerCase(), searchInput.toLowerCase())) {
+          const speciesCode = data[i].SPECIES_CODE;
+          const commonName = data[i].PRIMARY_COM_NAME;
+          const resultID = "result_" + speciesCode;
+          var resultItem = document.createElement('div');
+          resultItem.innerHTML = commonName;
+          resultItem.speciesCode = speciesCode;
+          resultItem.className = "result listElement";
+          resultItem.id = resultID;
+          resultItem.addEventListener("click", function (e) {
+            const selectionID = "selection_" + speciesCode;
+            var selectionItem = document.createElement("div");
+            selectionItem.innerHTML = commonName;
+            selectionItem.id = selectionID;
+            selectionItem.className = "selection listElement";
+            selectionItem.code = speciesCode;
+            selectionItem.addEventListener("click", function (f) {
+              node = document.getElementById(selectionID);
+              node.parentNode.removeChild(node);
+            });
+            const selected = document.getElementById("selectionList").children;
+            var selectionList = [];
+            for (i = 0; i < selected.length; i++) {
+              selectionList.push(selected[i].code);
+            }
+            if (!selectionList.includes(speciesCode)) {
+              document.getElementById("selectionList").appendChild(selectionItem);
+              document.getElementById("textInput").value = "";
+              var listContainer = document.getElementById('results');
+              listContainer.replaceChildren()
+            }
+            document.getElementById("textInput").focus();
+          });
+          r.push(resultItem);
+        }
+        // Number of results to display
+        if (r.length >= 7) {
+          i = data.length;
+        }
+      }
+      return r;
+    }
+
+    function showResults() {
+      var inputText = document.getElementById('textInput').value;
+      var listContainer = document.getElementById('results');
+      listContainer.replaceChildren();
+      searchResults(inputText).forEach(r => {
+        listContainer.appendChild(r);
+      });
+      if (inputText == "") {
+        listContainer.replaceChildren();
+      }
+    }
+
+
+    function populateMonths() {
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      var monthSelector = document.getElementById("monthSelector");
+      for (var i = 0; i < months.length; i++) {
+        var option = document.createElement("option");
+        option.value = months[i];
+        option.innerHTML = months[i];
+        monthSelector.appendChild(option);
+      }
+    }
+    window.onload = populateMonths();
+
+
+    async function fetchTaxon() {
+      const response = await fetch('/getTaxon'); // Fetch the JSON file
+      data = await response.json(); // Extract JSON data from the response
+
+      var startButton = document.getElementById("start");
+      var searchBox = document.getElementById("textInput");
+      startButton.removeAttribute("disabled");
+      searchBox.removeAttribute("disabled");
+      // var ul = document.getElementById("listContainer");
+      // for (var i = 0; i < data.length; i++) {
+      //   var el = document.createElement("div");
+      //   el.innerHTML = data[i].PRIMARY_COM_NAME;
+      //   ul.appendChild(el);
+      // }
+    }
+    window.onload = fetchTaxon;
+
+
+    async function startQuiz() {
+      var startButton = document.getElementById("start");
+      startButton.setAttribute("disabled", true);
+      var speciesList = []
+      const selection = document.getElementById("selectionList").children;
+      for (var i = 0; i < selection.length; i++) {
+        speciesList.push({ "species": selection[i].innerHTML, "bird_id": selection[i].code });
+      }
+      const quizLength = document.getElementById("questionCount").value;
+      var selectedMonth = null;
+      const monthOptions = document.getElementById("monthSelector").children
+      for (var i = 0; i < monthOptions.length; i++) {
+        if (monthOptions[i].selected) {
+          selectedMonth = monthOptions[i].value;
+        }
+      }
+
+      const response = await fetch('/getQuizData', {
+        method: "GET",
+        headers: {
+          'Content-Type': 'application/json',
+          'speciesList': JSON.stringify(speciesList),
+          'quizLength': quizLength,
+          'month': selectedMonth,
+
+        },
+      });
+      sessionStorage.setItem("speciesList", JSON.stringify(speciesList));
+      sessionStorage.setItem("quizData", JSON.stringify(await response.json())); // Extract JSON data from the response
+      sessionStorage.removeItem("answerRecord");
+      window.location.href = "/quiz?question=1";
+    }
+  </script>
+</body>
+
+</html>

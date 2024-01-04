@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<head>
+    <title>Quiz Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <div>
+        <button id="home" onclick="home()">Home</button>
+        <h1>Quiz Result</h1>
+        <div id="score"></div>
+        <div id="resultList"></div>
+    </div>
+
+    <script>
+        function home() {
+            window.location.href = "/";
+        }
+        function onLoad() {
+            var score = 0;
+            var quizData = JSON.parse(sessionStorage.getItem("quizData"));
+            var answerRecord = JSON.parse(sessionStorage.getItem("answerRecord"));
+            var resultList = document.getElementById("resultList");
+            for (var i = 0; i < quizData.length; i++) {
+                const correctAnswer = quizData[i].species;
+                const mlTag = quizData[i].mlTag;
+                const userAnswer = answerRecord[i];
+                var result = document.createElement("div");
+                result.className = "resultContainer"
+
+                var image = document.createElement("img");
+                image.className = "resultImage";
+                image.src = "https://cdn.download.ams.birds.cornell.edu/api/v1/asset/" + mlTag + "/";
+
+                var text1 = document.createElement("div");
+                text1.innerHTML = correctAnswer;
+
+                var text2 = document.createElement("div");
+                text2.innerHTML = "Your answer: " + userAnswer;
+                if (userAnswer == correctAnswer) {
+                    text2.className = "correct";
+                    score++;
+                }
+                else {
+                    text2.className = "incorrect";
+                }
+
+                var mlLink = document.createElement("a");
+                mlLink.target = "_blank";
+                mlLink.innerHTML = "ML" + mlTag;
+                mlLink.href = "https://macaulaylibrary.org/asset/" + mlTag + "/";
+
+                resultList.appendChild(result);
+                result.appendChild(image);
+                result.appendChild(text1);
+                result.appendChild(text2);
+                result.appendChild(mlLink);
+            }
+            var scoreDiv = document.getElementById("score");
+            scoreDiv.innerHTML = "Score: " + String(score) + "/" + String(quizData.length)
+        }
+        window.onload = onLoad;
+    </script>
+</body>
+
+</html>
