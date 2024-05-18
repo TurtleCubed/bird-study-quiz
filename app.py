@@ -18,30 +18,13 @@ def load_taxonomy():
     return jsonify(taxonomy)
 
 
-@app.route('/getQuizData', methods=['GET'])
+@app.route('/get-quiz-data', methods=['GET'])
 def getQuizData():
     quiz_length = int(request.headers["quizLength"])
     months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     month = months.index(request.headers["month"]) + 1
     species_list = json.loads(request.headers["speciesList"])
-    quiz_data = utils.quizData(species_list, quiz_length, month)
-    sample = [
-        {
-            "question": "1",
-            "species": "Common Loon",
-            "mlTag": "612533357"
-        },
-        {
-            "question": "2",
-            "species": "Pacific Loon",
-            "mlTag": "612491513"
-        },
-        {
-            "question": "3",
-            "species": "Red-throated Loon",
-            "mlTag": "612519046"
-        }
-    ]
+    quiz_data = utils.quiz_data(species_list, quiz_length, month)
     return jsonify(quiz_data)
 
 

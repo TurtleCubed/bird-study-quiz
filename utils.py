@@ -4,7 +4,7 @@ import datetime
 
 
 
-def quizData(bird_list: list, quizLength: int, month: int):
+def quiz_data(bird_list: list, quizLength: int, month: int):
     data = choices(bird_list, k=quizLength)
     counts = {}
     for d in data:
