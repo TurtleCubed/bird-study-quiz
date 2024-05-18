@@ -45,8 +45,20 @@ def get_asset_ids(birdid, month):
     else: 
         end_month = month + 1
     # perform url search
-    url = f'https://media.ebird.org/api/v2/search?taxonCode={birdid}&sort=id_desc&beginYear={year}&endYear={year}&mediaType=photo&birdOnly=true&beginMonth={start_month}&endMonth={end_month}'
-    out = requests.get(url, cookies={'ml-search-session': 'eyJ1c2VyIjp7ImFub255bW91cyI6dHJ1ZX19', 'ml-search-session.sig': 'XZPO3pJ50PRL94J3OagC3Bg1IVk'})
+    url = ''.join([f'https://media.ebird.org/api/v2/search?'
+            f'taxonCode={birdid}&',
+            f'sort=id_desc&',
+            f'beginYear={year}&',
+            f'endYear={year}&',
+            f'mediaType=photo&',
+            f'birdOnly=true&',
+            f'beginMonth={start_month}&',
+            f'endMonth={end_month}'])
+    print(url)
+    out = requests.get(url, cookies={
+            'ml-search-session': 'eyJ1c2VyIjp7ImFub255bW91cyI6dHJ1ZX19', 
+            'ml-search-session.sig': 'SjUzp_aBI4snTlng2qDJ7TZcb2w'
+        })
     out = [x['assetId'] for x in out.json()]
     return out
 
