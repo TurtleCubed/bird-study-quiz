@@ -11,7 +11,7 @@ logging.basicConfig(
 app = Flask(__name__)
 
 
-@app.route('/getTaxon', methods=['GET'])
+@app.route('/get-taxon', methods=['GET'])
 def load_taxonomy():
     with open(Path("resources", "ebird_taxonomy_v2023.json")) as f:
         taxonomy = json.load(f)

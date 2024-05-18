@@ -142,7 +142,7 @@
 
 
     async function fetchTaxon() {
-      const response = await fetch('/getTaxon'); // Fetch the JSON file
+      const response = await fetch('/get-taxon'); // Fetch the JSON file
       data = await response.json(); // Extract JSON data from the response
 
       var startButton = document.getElementById("start");
